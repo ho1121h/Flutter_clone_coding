@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:smooth_star_rating_nsafe/smooth_star_rating.dart';
 
 void main() => runApp(MyApp());
 
@@ -276,6 +277,7 @@ class _DetailScreenState extends State<DetailScreen> {
     if (response.statusCode == 200) {
       setState(() {
         movieDetails = jsonDecode(response.body);
+        // print("getMovieDetails!!!");
       });
     }
   }
@@ -283,67 +285,140 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: ListView(
+      // appBar: AppBar(
+      //   title: Text("Back to list"),
+      //   backgroundColor: Colors.transparent,
+      // ),
+      body: Stack(
         children: [
           Image.network(
             'https://image.tmdb.org/t/p/w500/${movieDetails['poster_path']}',
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                      : null,
+            fit: BoxFit.cover,
+            height: 1111,
+          ),
+          Positioned(
+            top: 60,
+            left: 0,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.transparent),
+                elevation: MaterialStateProperty.all(0),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    '< ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(' Back to list'),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 50, // 화면의 최하단에 위치
+            left: 50,
+            right: 50,
+            child: SizedBox(
+              width: 100, // 버튼의 너비
+              height: 50, // 버튼의 높이
+              child: ElevatedButton(
+                onPressed: () {
+                  // 티켓 구매 로직
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.yellow),
                 ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              print(error); // 예외 메시지 출력
-              return Text('Error loading image');
-            },
+                child: Text(
+                  'Buy Tickets',
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+            ),
           ),
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (movieDetails.containsKey('title') &&
                     movieDetails['title'] != null)
                   Text(
                     movieDetails['title'],
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 const SizedBox(height: 8),
-                Text('Rating: ${movieDetails['vote_average']}'),
+                SmoothStarRating(
+                  rating: (movieDetails['vote_average'] ?? 0).toDouble(),
+
+                  // isReadOnly: true,
+                  size: 20,
+                  filledIconData: Icons.star,
+                  halfFilledIconData: Icons.star_half,
+                  defaultIconData: Icons.star_border,
+                  color: Colors.amber,
+                  borderColor: Colors.amber,
+                  starCount: 5,
+                ),
                 const SizedBox(height: 8),
-                const Text('Overview'),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      Text(
+                        '${((movieDetails['runtime'] ?? 0) / 60).floor().toString()}h ${(movieDetails['runtime'] ?? 0) % 60}min',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Text(
+                        " | ",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        movieDetails['genres'] != null
+                            ? (movieDetails['genres'] as List)
+                                .map((genre) => genre['name'].toString())
+                                .join(', ')
+                            : 'No genres',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 25),
+                const Text(
+                  'Storyline',
+                  style: TextStyle(
+                      fontSize: 22,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 if (movieDetails.containsKey('overview') &&
                     movieDetails['overview'] != null)
                   Text(
                     movieDetails['overview'],
                     style: const TextStyle(
-                        fontSize: 8, fontWeight: FontWeight.bold),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 const SizedBox(height: 8),
-                const Text('Genres'),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: movieDetails['genres'] != null
-                      ? List.generate(
-                          (movieDetails['genres'] as List).length,
-                          (index) => Chip(
-                            label: Text((movieDetails['genres'] as List)[index]
-                                ['name']),
-                          ),
-                        )
-                      : [],
-                ),
               ],
             ),
           ),
