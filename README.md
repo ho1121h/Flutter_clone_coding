@@ -12,5 +12,5 @@
 # clone3
 ![image](https://github.com/ho1121h/Flutter_clone_coding/assets/102492367/a8d18f2a-1660-4ccb-ad57-2da302c40784)
 
-[동영상](https://imgur.com/a/f97p4jl).
+[URL](https://imgur.com/a/f97p4jl).
 
